@@ -280,6 +280,18 @@ there, under that repo's house rules.
 
 ## 12. Build order
 
+Both plans are written and live in [specs/plans/](specs/plans/):
+
+- [2026-08-23-phase1-extension.md](specs/plans/2026-08-23-phase1-extension.md) —
+  this repo, 9 tasks.
+- [2026-08-23-browser-integration-receive.md](specs/plans/2026-08-23-browser-integration-receive.md)
+  — the app repo's half, 9 tasks. Stored here because this repo owns the
+  contract; copy it into the app repo when that work starts.
+
+The two meet at extension Task 9 / app Task 9 — the shared end-to-end
+checklist. The app side must reach at least its Task 6 before extension
+Task 9 can run.
+
 1. Classifier + tests *(done — the rest is not)*
 2. Transport module + `djcrate://` URI builder
 3. App-side: registry toggle, argv parse, widened socket protocol — the receive
