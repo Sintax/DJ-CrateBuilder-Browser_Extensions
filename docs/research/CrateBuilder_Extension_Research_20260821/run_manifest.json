@@ -1,0 +1,20 @@
+{
+  "query": "Feasibility of a Chrome browser extension that sends a YouTube or SoundCloud channel directly to DJ-CrateBuilder; present several integration approaches in a PDF",
+  "mode": "standard",
+  "date": "2026-08-21",
+  "assumptions": [
+    "Personal-use tool: unpacked/dev-mode extension install is acceptable; Chrome Web Store publication is a risk assessment, not a requirement",
+    "Windows is the primary target; Linux .deb channel considered secondarily",
+    "Technical audience (the app's maintainer)"
+  ],
+  "retrieval": {
+    "web_searches": 5,
+    "targeted_fetches": 1,
+    "codebase_files_inspected": ["cratebuilder/singleton.py", "cratebuilder/db.py", "CLAUDE.md project docs"]
+  },
+  "known_gaps": [
+    "Chrome Local Network Access behavior for extension-originated loopback fetches is undocumented; flagged in report, not resolved",
+    "No prototypes built; effort estimates from code reading"
+  ],
+  "outputs": ["report.md", "report.html", "DJ-CrateBuilder_Chrome_Extension_Feasibility.pdf", "sources.jsonl", "run_manifest.json"]
+}

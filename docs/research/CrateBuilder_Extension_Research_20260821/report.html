@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sending YouTube / SoundCloud Channels from Chrome to DJ-CrateBuilder</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 16mm 16mm; }
+  @page { @bottom-center { content: counter(page); } }
+
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin: 0;
+  }
+
+  /* ── Cover header ─────────────────────────────────────────── */
+  .cover { border-top: 4pt solid #003d5c; padding-top: 10pt; margin-bottom: 16pt; }
+  .eyebrow {
+    font-size: 7.5pt; letter-spacing: 1.4pt; text-transform: uppercase;
+    color: #5a6b75; margin-bottom: 6pt;
+  }
+  h1 {
+    font-size: 20pt; line-height: 1.2; color: #003d5c;
+    margin: 0 0 8pt 0; font-weight: 600;
+  }
+  .meta {
+    font-size: 8.5pt; color: #5a6b75;
+    border-top: 0.5pt solid #d4dade; padding-top: 5pt;
+  }
+  .meta span { margin-right: 14pt; }
+
+  /* ── Metrics dashboard ────────────────────────────────────── */
+  .metrics { display: table; width: 100%; border-collapse: collapse; margin: 0 0 16pt 0; page-break-inside: avoid; }
+  .metrics .row { display: table-row; }
+  .metric {
+    display: table-cell; width: 25%; background: #f8f9fa;
+    border-left: 2.5pt solid #003d5c; padding: 7pt 9pt;
+    border-right: 4pt solid #ffffff; vertical-align: top;
+  }
+  .metric .val { font-size: 15pt; font-weight: 600; color: #003d5c; line-height: 1.1; }
+  .metric .lbl { font-size: 7.5pt; color: #5a6b75; text-transform: uppercase; letter-spacing: 0.5pt; margin-top: 3pt; }
+
+  /* ── Sections ─────────────────────────────────────────────── */
+  h2 {
+    font-size: 12pt; color: #003d5c; font-weight: 600;
+    margin: 16pt 0 7pt 0; padding-bottom: 3pt;
+    border-bottom: 1pt solid #003d5c;
+    page-break-after: avoid; page-break-inside: avoid;
+  }
+  h3 {
+    font-size: 10pt; color: #1a1a1a; font-weight: 600;
+    margin: 11pt 0 4pt 0; page-break-after: avoid;
+  }
+  p { margin: 0 0 7pt 0; orphans: 3; widows: 3; text-align: justify; }
+  strong { font-weight: 600; color: #00293e; }
+  code {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 8.5pt; background: #f2f4f6; padding: 0 2pt;
+    border: 0.5pt solid #e2e6e9;
+  }
+
+  /* Executive summary emphasis block */
+  .exec { background: #f8f9fa; border-left: 3pt solid #003d5c; padding: 9pt 11pt; margin-bottom: 4pt; }
+  .exec p:last-child { margin-bottom: 0; }
+
+  /* ── Tables ───────────────────────────────────────────────── */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 8pt;
+    margin: 8pt 0 10pt 0;
+  }
+  thead { display: table-header-group; }
+  tbody tr { page-break-inside: avoid; }
+  thead th {
+    background: #003d5c; color: #ffffff; text-align: left;
+    padding: 5pt 6pt; font-weight: 600; font-size: 8pt;
+    border-right: 0.5pt solid #24576f;
+  }
+  tbody td {
+    padding: 4.5pt 6pt; border-bottom: 0.5pt solid #dfe4e7;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: #f8f9fa; }
+  tbody td:first-child { font-weight: 600; color: #00293e; width: 20%; }
+
+  /* ── Bibliography ─────────────────────────────────────────── */
+  .biblio { font-size: 8pt; }
+  .biblio ol { margin: 0; padding-left: 14pt; }
+  .biblio li { margin-bottom: 3.5pt; page-break-inside: avoid; }
+  .biblio .url { color: #4a5a64; word-break: break-all; }
+
+  .appendix { font-size: 8.5pt; color: #333; }
+  .cite { color: #003d5c; font-weight: 600; }
+  .pagebreak { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="eyebrow">Feasibility Study &middot; DJ-CrateBuilder v1.3</div>
+  <h1>Sending YouTube &amp; SoundCloud Channels<br>from Chrome to DJ-CrateBuilder</h1>
+  <div class="meta">
+    <span><strong>Date</strong> 2026-08-21</span>
+    <span><strong>Mode</strong> Standard research</span>
+    <span><strong>Sources</strong> 13</span>
+    <span><strong>Audience</strong> Maintainer</span>
+  </div>
+</div>
+
+<div class="metrics">
+  <div class="row">
+    <div class="metric">
+      <div class="val">4</div>
+      <div class="lbl">Integration options<br>evaluated</div>
+    </div>
+    <div class="metric">
+      <div class="val">49737</div>
+      <div class="lbl">Existing loopback port<br>reusable as IPC</div>
+    </div>
+    <div class="metric">
+      <div class="val">Option&nbsp;1</div>
+      <div class="lbl">Recommended:<br>djcrate:// handler</div>
+    </div>
+    <div class="metric">
+      <div class="val">Blocked</div>
+      <div class="lbl">Web Store route<br>(YouTube policy)</div>
+    </div>
+  </div>
+</div>
+
+<h2>Executive Summary</h2>
+<div class="exec">
+<p>Building a Chrome extension that hands a YouTube or SoundCloud channel URL to DJ-CrateBuilder is clearly feasible, and the app is already better positioned for it than most desktop apps: the single-instance lock in <code>cratebuilder/singleton.py</code> holds a loopback TCP socket on port 49737 that already receives messages from second launches <span class="cite">[11]</span>, and the watchlist has a clean programmatic entry point in <code>Database.add_watchlist_channel</code> <span class="cite">[12]</span>. Every integration option below reduces to &ldquo;get the URL from the browser to that socket (or to a fresh launch&rsquo;s argv).&rdquo;</p>
+
+<p>Four architectures were evaluated. <strong>Option 1 &mdash; a custom <code>djcrate://</code> protocol handler plus a thin context-menu extension &mdash; is the recommended first build.</strong> It needs roughly 30 lines of registry/argv code in the app, a ~60-line Manifest V3 extension with no host permissions, works when the app is closed (Windows launches it), works from any browser, and even works with no extension at all via a bookmarklet. Its only real cost is Chrome&rsquo;s one-time &ldquo;Open DJ-CrateBuilder?&rdquo; confirmation dialog per site, which the user can permanently allow <span class="cite">[8][9]</span>.</p>
+
+<p><strong>Option 2 &mdash; a native messaging host &mdash; is the &ldquo;correct&rdquo; Chrome-blessed architecture</strong> <span class="cite">[1][2]</span>: silent sends, bidirectional replies (e.g. &ldquo;already in watchlist&rdquo;), no open network surface. It costs the most: an extra stub executable in the installer, a registry-registered manifest pinned to the extension ID, and Firefox needs a parallel setup. It is the right second phase if the protocol-handler prompt ever becomes annoying.</p>
+
+<p><strong>Option 3 &mdash; an HTTP bridge on the existing port &mdash; is feasible but currently the riskiest</strong>, because Chrome 142 (Oct 2025) began gating requests to loopback addresses behind the new Local Network Access permission, and its interaction with extension-originated fetches is not yet clearly documented <span class="cite">[6][7]</span>. It also opens a genuine local attack surface that needs token auth.</p>
+
+<p>One finding constrains distribution, not feasibility: the Chrome Web Store explicitly prohibits extensions that facilitate downloading YouTube content, with rejection, removal, or developer-account bans as enforcement <span class="cite">[3][4]</span>. An extension whose sole purpose is feeding a YouTube ripper would very likely be judged against that policy even though it never downloads anything in-browser. The practical answer for a personal tool: load it unpacked in developer mode and never submit it to the store.</p>
+</div>
+
+<h2>1. What the App Already Provides</h2>
+<p>The research began in the codebase, because the cheapest option is the one that reuses existing machinery.</p>
+
+<p><strong>The singleton socket is a ready-made IPC channel.</strong> <code>acquire_single_instance</code> binds and listens on <code>127.0.0.1:49737</code>; a second launch that loses the bind race calls <code>request_show</code>, which connects and sends the ASCII bytes <code>show</code>, and the winner&rsquo;s listener thread accepts the connection and restores the window <span class="cite">[11]</span>. Two properties matter here: the listener already reads a (16-byte) payload, so extending the protocol to <code>add &lt;url&gt;</code> is a small, contained change; and the &ldquo;second launch forwards to the running instance, then exits&rdquo; pattern is exactly the relay a protocol handler or native-messaging stub needs. The port is fixed by design, so no discovery step is needed.</p>
+
+<p><strong>The watchlist has a programmatic add path.</strong> <code>Database.add_watchlist_channel(url=&hellip;, display_name=&hellip;, platform=&hellip;, genre=&hellip;)</code> <span class="cite">[12]</span> is the same call the UI makes, and the durable channel-link store (<code>cratebuilder/links.py</code>) sits beside it. The one wrinkle: an add needs a <em>genre</em>, which the browser does not know. The clean resolution is for the app to receive the URL and open its existing add-channel flow pre-filled, letting the user pick the genre in the app rather than in the extension.</p>
+
+<p><strong>Precedent for registry writes exists.</strong> <code>cratebuilder/startup.py</code> already toggles an HKCU Run key for &ldquo;start at login,&rdquo; so a per-user protocol registration follows an established in-app pattern and needs no administrator rights.</p>
+
+<h2>2. Option 1 &mdash; Custom Protocol Handler (<code>djcrate://</code>) + Thin Extension</h2>
+<p><strong>Mechanism.</strong> Windows lets any application claim a URI scheme by writing a key under the user&rsquo;s registry classes: <code>HKCU\Software\Classes\djcrate</code> with an empty <code>URL Protocol</code> value and <code>shell\open\command</code> pointing at the exe with <code>"%1"</code> <span class="cite">[9]</span>. Once registered, any browser that navigates to <code>djcrate://add?url=https%3A%2F%2Fsoundcloud.com%2Fsomeartist</code> launches (or signals) the app with the full URI as a command-line argument <span class="cite">[8][9]</span>. Browsers show a one-time external-protocol confirmation (&ldquo;Open DJ-CrateBuilder?&rdquo;) with an <em>always allow on this site</em> checkbox.</p>
+
+<h3>App-side work</h3>
+<p>1. A settings toggle (mirroring <code>startup.py</code>) that writes/removes the HKCU registry key &mdash; pointing at the frozen exe, or at <code>pythonw.exe &lt;script&gt;</code> when running from source. 2. Argv parsing at launch: if an argument starts with <code>djcrate://</code>, decode it. If this instance wins the singleton bind, process it after the UI is up; if it loses, forward it over the socket instead of plain <code>show</code> and exit &mdash; the existing second-launch flow with a payload. 3. Widen the singleton listener&rsquo;s read (currently 16 bytes) and dispatch <code>show</code> vs <code>add &lt;url&gt;</code>, marshalling to the Tk thread as <code>on_show</code> already must <span class="cite">[11]</span>. 4. On receipt, open the add-channel dialog pre-filled with the URL.</p>
+
+<h3>Extension-side work</h3>
+<p>A Manifest V3 extension with only the <code>contextMenus</code> permission: right-click on a page (or a link) on youtube.com/soundcloud.com &rarr; &ldquo;Send channel to DJ-CrateBuilder&rdquo; &rarr; the service worker URL-encodes the tab or link URL and navigates to the <code>djcrate://</code> URI. No host permissions, no content scripts, no background network access &mdash; a minimal, low-maintenance surface. A toolbar button variant is equally trivial.</p>
+
+<h3>The bookmarklet bonus</h3>
+<p>Because the handler is browser-agnostic, a one-line bookmarklet (<code>javascript:location='djcrate://add?url='+encodeURIComponent(location.href)</code>) delivers the same feature with zero extension code, in any browser, today. This makes Option 1 incrementally shippable: handler first, extension polish second.</p>
+
+<h3>Linux and limitations</h3>
+<p>The <code>.deb</code> can register <code>x-scheme-handler/djcrate</code> via its <code>.desktop</code> file&rsquo;s <code>MimeType</code> entry &mdash; the standard freedesktop equivalent &mdash; so the same design carries to the Linux channel. The confirmation dialog is per-site (one approval each for youtube.com and soundcloud.com); URI length is bounded (irrelevant for channel URLs); and communication is one-way &mdash; the extension cannot learn whether the add succeeded. Feedback happens in the app window, which for a &ldquo;send it over to the app&rdquo; workflow is arguably where it belongs.</p>
+
+<h2>3. Option 2 &mdash; Native Messaging Host</h2>
+<p><strong>Mechanism.</strong> Chrome&rsquo;s native messaging lets an extension exchange JSON messages with a native process over stdio, with each message framed by a 32-bit length prefix <span class="cite">[1]</span>. The app installs a small host manifest (name, description, path to the host executable, <code>"type": "stdio"</code>, and <code>allowed_origins</code> pinned to the extension&rsquo;s ID) and a registry key <code>HKCU\Software\Google\Chrome\NativeMessagingHosts\com.sintax.cratebuilder</code> whose default value is the manifest&rsquo;s path <span class="cite">[1][2]</span>. Chrome launches the host process on demand when the extension calls <code>chrome.runtime.sendNativeMessage</code>.</p>
+
+<p><strong>Architecture for CrateBuilder.</strong> The host should <em>not</em> be the app itself &mdash; Chrome would start a second app instance per message. Instead a stub (a small Python script frozen the same way <code>updater.py</code> is, or invoked via the system Python) receives <code>{"action":"add","url":&hellip;}</code> on stdin, relays it to the running app over the singleton port, launches the app with the URL as argv when nothing is listening, and writes back <code>{"ok":true}</code>. This mirrors the existing app/updater two-executable pattern.</p>
+
+<p><strong>Strengths.</strong> After installation there are no prompts of any kind &mdash; a click sends silently. The channel is bidirectional, so the extension badge could show &ldquo;added&rdquo; or &ldquo;already watched,&rdquo; and could later query richer state. Nothing listens on any port for this path, so there is no new network attack surface, and the Local Network Access change is irrelevant to it <span class="cite">[1]</span>.</p>
+
+<p><strong>Costs and gotchas.</strong> It is the most moving parts: a third executable in the installer (host stub), a manifest file, a registry key, and &mdash; the classic trap &mdash; <code>allowed_origins</code> must contain the extension&rsquo;s exact ID, but an <em>unpacked</em> extension&rsquo;s ID is derived from its folder path unless a <code>key</code> field is pinned in <code>manifest.json</code>. Forgetting the key pin means the integration breaks when the folder moves. Edge and Firefox each need their own registry location/manifest dialect for the same host <span class="cite">[2]</span>. Debugging stdio framing is also famously fiddly compared to <code>curl</code>-able HTTP.</p>
+
+<p><strong>Verdict.</strong> Feasible and clean, but its advantages over Option 1 (no confirm dialog, feedback in the browser) are quality-of-life rather than capability. Best treated as Phase 2.</p>
+
+<h2>4. Option 3 &mdash; Localhost HTTP Bridge on Port 49737</h2>
+<p><strong>Mechanism.</strong> Extensions cannot open raw TCP sockets, so speaking to the singleton port directly requires teaching it minimal HTTP: parse a request line, route <code>POST /add</code>, reply <code>200</code>. The extension then simply <code>fetch</code>es <code>http://127.0.0.1:49737/add</code> from its service worker, declaring <code>host_permissions: ["http://127.0.0.1:49737/*"]</code> <span class="cite">[5][13]</span>. One port would serve both single-instance detection and the browser bridge &mdash; architecturally tidy, entirely stdlib.</p>
+
+<p><strong>Security obligations.</strong> An open loopback HTTP endpoint is reachable by every local process and &mdash; absent browser mitigations &mdash; by malicious web pages via form posts or DNS rebinding. A production-honest version needs a shared-secret token (generated into the config file, pasted once into the extension&rsquo;s options page), an <code>Origin</code> allowlist, and rejection of non-extension origins. That is all standard, but it is real work and a real ongoing surface, for an app whose current socket protocol is deliberately trivial.</p>
+
+<p><strong>The Local Network Access problem.</strong> As of Chrome 142 (28 Oct 2025), Chrome gates requests from public sites to private and loopback addresses behind a new user permission, part of a CSRF-hardening effort <span class="cite">[6][7]</span>; enterprise escape hatches exist but are temporary or policy-managed <span class="cite">[10]</span>. Critically for this option, Google&rsquo;s documentation describes the behavior for <em>websites</em> and does not clearly specify how extension-originated fetches from a <code>chrome-extension://</code> origin are treated <span class="cite">[6]</span>. Community signals suggest extensions are prompted or exempted, but this is <strong>unverified</strong> &mdash; a prototype must be tested against current Chrome before committing. This uncertainty is the main reason not to lead with this option; ironically it also <em>helps</em> security by throttling hostile web-page access to the port.</p>
+
+<p><strong>When it wins.</strong> If a future roadmap includes other local clients (a phone on the LAN, a Stream Deck plugin, scripts), an authenticated local HTTP API is the most general substrate, and this option becomes strategic rather than merely convenient. It also works when the app is closed only if paired with something that can launch it &mdash; which circles back to Options 1 or 2.</p>
+
+<h2>5. Option 4 &mdash; Baselines Without an Extension</h2>
+<p>For completeness, three zero-extension paths were assessed. A <strong>clipboard watcher</strong> (app offers &ldquo;Add copied channel?&rdquo; when a YouTube/SoundCloud channel URL appears on the clipboard while the window gains focus) requires no browser integration whatsoever and could ship in an afternoon; its downside is discoverability and occasional false positives. The <strong>bookmarklet</strong> rides Option 1&rsquo;s handler as described. <strong>Drag-and-drop</strong> of a URL onto the Tk window is weak on Windows without the extra <code>tkinterdnd2</code> dependency and is not recommended. The clipboard watcher is a genuinely useful complement regardless of which browser option ships.</p>
+
+<h2>6. Distribution and Policy Feasibility</h2>
+<p>This is where &ldquo;Chrome extension for a YouTube downloader&rdquo; meets policy reality. The Chrome Web Store&rsquo;s program policies prohibit extensions that enable or facilitate downloading YouTube content; enforcement ranges from rejection at review to removal to permanent developer-account bans <span class="cite">[3][4]</span>. The proposed extension never downloads media in the browser &mdash; it forwards a URL &mdash; but its listing would necessarily describe feeding a YouTube-ripping desktop app, and the policy targets <em>facilitation</em>, not just in-browser downloading <span class="cite">[4]</span>. SoundCloud is not covered by that specific rule, but a YouTube-branded listing is a submission risk not worth taking for a personal tool.</p>
+
+<p><strong>The pragmatic path is to never touch the store:</strong> load the extension unpacked via Developer Mode (<code>chrome://extensions</code> &rarr; &ldquo;Load unpacked&rdquo;), keep it in the repo (or a private one), and accept Chrome&rsquo;s mild developer-mode nag on startup. Windows Chrome no longer allows silent sideloading of packed <code>.crx</code> files outside enterprise policy, so &ldquo;unpacked in dev mode&rdquo; is the realistic personal-install story. This constraint applies equally to all three extension options; notably, Option 1&rsquo;s bookmarklet fallback is immune to it entirely. Firefox has no equivalent published ban wording aimed at YouTube specifically and allows self-hosted signed add-ons, so a cross-browser future favors options that aren&rsquo;t Chrome-plumbing-specific &mdash; again Option 1.</p>
+
+<h2>7. Comparison</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Criterion</th>
+      <th>1 &middot; Protocol handler</th>
+      <th>2 &middot; Native messaging</th>
+      <th>3 &middot; HTTP bridge</th>
+      <th>4 &middot; Clipboard watcher</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>App-side effort</td><td>Small</td><td>Medium (stub exe + manifest)</td><td>Medium (HTTP + token auth)</td><td>Small</td></tr>
+    <tr><td>Extension effort</td><td>Tiny (no host perms)</td><td>Small</td><td>Small</td><td>None</td></tr>
+    <tr><td>Works when app closed</td><td><strong>Yes</strong> (OS launches it)</td><td>Yes (stub launches it)</td><td>No (needs launcher)</td><td>Yes</td></tr>
+    <tr><td>Per-send friction</td><td>One-time confirm per site</td><td>None</td><td>None</td><td>Confirm in app</td></tr>
+    <tr><td>Browser feedback</td><td>None</td><td><strong>Rich (bidirectional)</strong></td><td>Rich</td><td>n/a</td></tr>
+    <tr><td>New attack surface</td><td>None meaningful</td><td>None (stdio)</td><td>Loopback HTTP (token needed)</td><td>None</td></tr>
+    <tr><td>Chrome 142 LNA risk</td><td>None</td><td>None</td><td><strong>Unverified</strong> [6]</td><td>None</td></tr>
+    <tr><td>Cross-browser</td><td><strong>Any browser + bookmarklet</strong></td><td>Per-browser manifests</td><td>Any (same LNA caveat)</td><td>Any</td></tr>
+    <tr><td>Linux carry-over</td><td><code>.desktop</code> MimeType</td><td>Per-browser manifest dirs</td><td>Same code</td><td>Same code</td></tr>
+    <tr><td>Installer changes</td><td>Registry toggle (HKCU)</td><td>Stub exe + manifest + registry</td><td>None</td><td>None</td></tr>
+  </tbody>
+</table>
+
+<h2>8. Recommendation</h2>
+<p><strong>Phase 1 &mdash; ship the <code>djcrate://</code> handler with a thin context-menu extension (Option 1), plus the bookmarklet.</strong> It is the smallest diff to the app, reuses the singleton socket exactly as designed, uniquely handles the app-not-running case for free, and dodges both the Web Store policy problem (nothing store-worthy exists to reject) and the Local Network Access uncertainty (no network involved). The app-side changes &mdash; registry toggle, argv handling, a two-verb socket protocol, pre-filled add dialog &mdash; are all unit-testable in <code>cratebuilder/</code> without Tk.</p>
+
+<p><strong>Phase 2 (optional) &mdash; add a native messaging host (Option 2)</strong> if the confirm dialog grates or in-browser feedback (&ldquo;already in your watchlist&rdquo;) proves valuable. The host stub relays to the same socket protocol Phase 1 builds, so Phase 1&rsquo;s work is fully reused.</p>
+
+<p><strong>Defer Option 3</strong> until Chrome&rsquo;s Local Network Access behavior for extensions is documented or empirically verified, and until there is a second local client that would justify an authenticated HTTP API. <strong>Consider the clipboard watcher (Option 4)</strong> as a cheap, complementary quality-of-life feature independent of the browser work.</p>
+
+<h2>9. Limitations &amp; Caveats</h2>
+<p>This study did not build prototypes; effort estimates come from reading the codebase, not implementation. The LNA-versus-extensions question (Option 3) is explicitly unresolved in Google&rsquo;s documentation <span class="cite">[6]</span> and should be treated as unknown until tested. Chrome Web Store enforcement is described from policy documents and secondary reporting <span class="cite">[3][4]</span>; actual review outcomes vary and were not tested. Browser behaviors cited reflect Chrome as of early 2026 and can shift &mdash; the LNA rollout itself (Chrome 138 &rarr; 142, with policy escape hatches expiring after M152 <span class="cite">[10]</span>) shows how quickly loopback rules are moving. Finally, protocol-handler behavior on Linux desktop environments varies by distribution and was assessed from freedesktop conventions, not tested on the <code>.deb</code>.</p>
+
+<h2>Bibliography</h2>
+<div class="biblio">
+<ol>
+  <li>Chrome for Developers &mdash; <em>Native messaging</em>. <span class="url">https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging</span></li>
+  <li>Microsoft Learn &mdash; <em>Native messaging (Microsoft Edge extensions)</em>. <span class="url">https://learn.microsoft.com/en-us/microsoft-edge/extensions/developer-guide/native-messaging</span></li>
+  <li>Chrome for Developers &mdash; <em>Troubleshooting Chrome Web Store violations</em>. <span class="url">https://developer.chrome.com/docs/webstore/troubleshooting</span></li>
+  <li>Vidow &mdash; <em>YouTube &amp; Chrome Extensions: why it doesn&rsquo;t work &amp; what does</em>. <span class="url">https://vidow.io/docs/guides/youtube-and-chrome-extensions</span></li>
+  <li>MDN Web Docs &mdash; <em>host_permissions (manifest.json)</em>. <span class="url">https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/host_permissions</span></li>
+  <li>Chrome for Developers Blog &mdash; <em>New permission prompt for Local Network Access</em>. <span class="url">https://developer.chrome.com/blog/local-network-access</span></li>
+  <li>Chrome Platform Status &mdash; <em>Local network access restrictions</em>. <span class="url">https://chromestatus.com/feature/5152728072060928</span></li>
+  <li>Microsoft Edge Blog &mdash; <em>Getting started with Protocol Handlers</em>. <span class="url">https://blogs.windows.com/msedgedev/2022/01/20/getting-started-url-protocol-handlers-microsoft-edge/</span></li>
+  <li>codestudy.net &mdash; <em>How to register a custom URL protocol in Windows</em>. <span class="url">https://www.codestudy.net/blog/how-do-i-register-a-custom-url-protocol-in-windows/</span></li>
+  <li>Chrome Enterprise &mdash; <em>LocalNetworkAccessRestrictionsTemporaryOptOut policy</em>. <span class="url">https://chromeenterprise.google/policies/local-network-access-restrictions-temporary-opt-out/</span></li>
+  <li>DJ-CrateBuilder codebase &mdash; <code>cratebuilder/singleton.py</code> (single-instance loopback socket, port 49737).</li>
+  <li>DJ-CrateBuilder codebase &mdash; <code>cratebuilder/db.py</code> (<code>add_watchlist_channel</code>, line 871).</li>
+  <li>Chrome for Developers &mdash; <em>Declare permissions</em>. <span class="url">https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions</span></li>
+</ol>
+</div>
+
+<h2>Methodology Appendix</h2>
+<div class="appendix">
+<p><strong>Query:</strong> Feasibility of a Chrome extension sending YouTube/SoundCloud channel URLs to DJ-CrateBuilder. <strong>Mode:</strong> standard (scope &rarr; plan &rarr; parallel retrieval &rarr; triangulate &rarr; synthesize &rarr; package).</p>
+<p><strong>Evidence base:</strong> 5 parallel web searches (native messaging setup, Web Store YouTube policy, MV3 localhost permissions, Local Network Access rollout, Windows protocol-handler registration), one targeted fetch of Google&rsquo;s LNA announcement, and direct codebase inspection (<code>singleton.py</code>, <code>db.py</code>, <code>startup.py</code> precedent).</p>
+<p><strong>Triangulation:</strong> the Web Store prohibition and the LNA rollout were each confirmed across three or more independent sources (first-party Google documentation plus secondary reporting). <strong>Key assumption surfaced:</strong> personal-use distribution (unpacked extension) is acceptable &mdash; store publication was assessed and advised against rather than assumed. <strong>Known gap:</strong> LNA behavior for extension-originated loopback fetches is undocumented; flagged rather than resolved.</p>
+</div>
+
+</body>
+</html>
