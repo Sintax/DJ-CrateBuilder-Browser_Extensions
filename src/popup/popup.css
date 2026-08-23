@@ -1,0 +1,7 @@
+/* Minimal placeholder — styled properly in build-order step 4. */
+body {
+  width: 280px;
+  margin: 0;
+  padding: 12px;
+  font: 13px/1.4 system-ui, sans-serif;
+}

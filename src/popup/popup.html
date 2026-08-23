@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Populated by popup.js from the active tab's classification.
+       Layout per docs/SPEC.md §5.1: page title, detected kind, one send
+       button, sent-state, help + history links. -->
+  <main id="app">
+    <p id="page-title"></p>
+    <p id="detected"></p>
+    <button id="send" hidden></button>
+    <p id="sent-state" hidden></p>
+    <nav>
+      <a id="help-link" href="#">CrateBuilder didn't open?</a>
+      <a id="history-link" href="#">Sent history</a>
+    </nav>
+  </main>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

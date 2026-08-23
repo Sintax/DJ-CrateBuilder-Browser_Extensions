@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "DJ-CrateBuilder",
+  "version": "0.1.0",
+  "description": "Send YouTube and SoundCloud channels and tracks to the DJ-CrateBuilder desktop app.",
+  "permissions": ["contextMenus", "storage", "tabs"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "DJ-CrateBuilder",
+    "default_popup": "popup/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*",
+        "https://soundcloud.com/*",
+        "https://m.soundcloud.com/*"
+      ],
+      "js": ["content/inpage.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
