@@ -1,0 +1,17 @@
+{
+  "name": "dj-cratebuilder-browser-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sends YouTube and SoundCloud URLs from the browser to the DJ-CrateBuilder desktop app via the djcrate:// protocol handler.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "build": "node scripts/build.mjs",
+    "build:chrome": "node scripts/build.mjs chrome",
+    "build:firefox": "node scripts/build.mjs firefox"
+  }
+}

@@ -1,0 +1,8 @@
+# Keep JSON manifests and JS at LF so the assembled zips are byte-identical
+# regardless of which platform ran the build.
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf

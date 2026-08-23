@@ -1,0 +1,31 @@
+# Build output — per-browser zips assembled by scripts/build.mjs
+dist/
+*.zip
+
+# Node (the project has no runtime deps; the test lane is node:test)
+node_modules/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.workspace/
+.idea/
+*.swp
+*.swo
+
+# Claude Code machine-local state: per-user permissions and worktrees
+.claude/
+.agents/
+skills-lock.json
+
+# Local-only project material, mirroring the app repo's convention — this file
+# is guidance for Claude Code, not something a cloner needs.
+CLAUDE.md
+
+# NOTE: tests/ and docs/ are intentionally tracked. The classifier suite is the
+# only way to verify a change, and docs/ holds the design records both this repo
+# and the app repo cite.
