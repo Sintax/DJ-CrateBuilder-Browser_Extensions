@@ -284,13 +284,16 @@ Both plans are written and live in [specs/plans/](specs/plans/):
 
 - [2026-08-23-phase1-extension.md](specs/plans/2026-08-23-phase1-extension.md) —
   this repo, 9 tasks.
-- [2026-08-23-browser-integration-receive.md](specs/plans/2026-08-23-browser-integration-receive.md)
-  — the app repo's half, 9 tasks. Stored here because this repo owns the
-  contract; copy it into the app repo when that work starts.
+- [2026-09-13-browser-integration-receive.md](specs/plans/2026-09-13-browser-integration-receive.md)
+  — the app repo's half, 10 tasks, written against the app's v2.0 web UI
+  (pywebview window over `web/`, driven by `cratebuilder/service.py`).
+  Stored here because this repo owns the contract; copy it into the app repo
+  when that work starts. Replaces the 2026-08-23 plan, which targeted the
+  since-retired tkinter UI.
 
-The two meet at extension Task 9 / app Task 9 — the shared end-to-end
-checklist. The app side must reach at least its Task 6 before extension
-Task 9 can run.
+The two meet at extension Task 9 / app Task 10 — the shared end-to-end
+checklist. The app side must reach at least its Task 8 (window-mode sends
+open the prefilled dialogs) before extension Task 9 can run.
 
 1. Classifier + tests *(done — the rest is not)*
 2. Transport module + `djcrate://` URI builder

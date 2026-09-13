@@ -8,7 +8,7 @@
 
 **Tech Stack:** Plain JS, ES modules, Manifest V3, `node:test`. **Zero npm dependencies.**
 
-**Spec:** `docs/SPEC.md` (design), `docs/specs/djcrate-uri-v1.md` (wire contract). The companion app-side plan is `DJ-CrateBuilder/docs/specs/plans/2026-08-23-browser-integration-receive.md`.
+**Spec:** `docs/SPEC.md` (design), `docs/specs/djcrate-uri-v1.md` (wire contract). The companion app-side plan is `DJ-CrateBuilder/docs/specs/plans/2026-09-13-browser-integration-receive.md`.
 
 ## Global Constraints
 
@@ -1035,7 +1035,7 @@ git commit -m "chore(firefox): verify MV3 build and document self-host signing"
 **Files:**
 - Create: `docs/e2e-checklist.md` (results recorded inline)
 
-**Interfaces:** consumes the finished app-side work from `DJ-CrateBuilder/docs/specs/plans/2026-08-23-browser-integration-receive.md`.
+**Interfaces:** consumes the finished app-side work from `DJ-CrateBuilder/docs/specs/plans/2026-09-13-browser-integration-receive.md`.
 
 Do not start until the app repo's Browser-integration Settings toggle exists and its full pytest suite is green.
 
