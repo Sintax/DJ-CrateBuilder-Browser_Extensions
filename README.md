@@ -54,6 +54,14 @@ pick `dist/chrome/`. The app side must have Browser integration enabled
 (DJ-CrateBuilder → Settings) or `djcrate://` links go nowhere — see
 [docs/help/didnt-open.md](docs/help/didnt-open.md).
 
+### Firefox
+
+`npm run build:firefox` produces `dist/djcratebuilder-firefox.zip`. For
+day-to-day development use `about:debugging` → "Load Temporary Add-on"
+(reverts on restart). For a permanent install, the zip must be signed:
+upload it at https://addons.mozilla.org/developers/ as **unlisted**
+(self-distribution), then install the signed `.xpi` it hands back.
+
 ## The two-repo shape
 
 The wire contract [docs/specs/djcrate-uri-v1.md](docs/specs/djcrate-uri-v1.md)
