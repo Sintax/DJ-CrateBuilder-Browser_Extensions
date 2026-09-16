@@ -16,10 +16,14 @@
  *   canonical URL from the classifier, NOT the raw page URL.
  * @returns {string} e.g. "djcrate://add?v=1&kind=channel&url=https%3A%2F%2F…"
  */
-export function buildUri({ kind, url }) {
-  // TODO(build-order 2): validate kind ∈ {channel, track} and url is https,
-  // then return `djcrate://add?v=1&kind=${kind}&url=${encodeURIComponent(url)}`.
-  throw new Error('not implemented — see docs/SPEC.md §3.1');
+export function buildUri({ kind, url } = {}) {
+  if (kind !== 'channel' && kind !== 'track') {
+    throw new TypeError(`bad kind: ${kind}`);
+  }
+  if (typeof url !== 'string' || !url.startsWith('https://')) {
+    throw new TypeError(`bad url: ${url}`);
+  }
+  return `djcrate://add?v=1&kind=${kind}&url=${encodeURIComponent(url)}`;
 }
 
 /**
@@ -28,11 +32,17 @@ export function buildUri({ kind, url }) {
  * received it (docs/SPEC.md §7).
  *
  * @param {{kind: 'channel'|'track', url: string}} payload
+ * @param {{tabId?: number}} [options] — target tab; omit to use the active tab.
  * @returns {Promise<{dispatched: boolean}>}
  */
-export async function send(payload) {
-  // TODO(build-order 2): navigate the active tab to buildUri(payload).
+export async function send(payload, { tabId } = {}) {
   // Navigation to an external-protocol URI leaves the page untouched, so no
   // tab state needs saving or restoring.
-  throw new Error('not implemented — see docs/SPEC.md §3.1');
+  const uri = buildUri(payload);
+  if (tabId !== undefined) {
+    await chrome.tabs.update(tabId, { url: uri });
+  } else {
+    await chrome.tabs.update({ url: uri });
+  }
+  return { dispatched: true };
 }
