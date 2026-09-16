@@ -1,6 +1,7 @@
 # DJ-CrateBuilder Browser Extension — design spec
 
-**Status:** approved 2026-08-23, implementation not started
+**Status:** approved 2026-08-23, implemented in Phase 1 — pending end-to-end
+verification against the desktop app
 **Supersedes:** the "Design decisions" section of [HANDOFF.md](HANDOFF.md), which
 this document expands. The handoff stays as the record of how these decisions
 were reached; this is the spec to build from.

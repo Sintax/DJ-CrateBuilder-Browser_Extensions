@@ -6,10 +6,12 @@ channels go to the app's Watch List, individual tracks to its download flow.
 The extension itself never downloads anything: it classifies the page, builds a
 `djcrate://` URI, and hands it to the OS. Everything else happens in the app.
 
-**Status: pre-implementation scaffold.** The design is approved
-([docs/SPEC.md](docs/SPEC.md)) and the URL classifier is implemented and
-tested; the UI surfaces and transport are stubs awaiting the implementation
-plan. Nothing here is loadable-and-useful yet.
+**Status: Phase 1 implemented, awaiting end-to-end verification.** The design
+is approved ([docs/SPEC.md](docs/SPEC.md)) and all of it is built — classifier,
+transport, sent-memory, toolbar popup, context menus and the in-page button.
+Run `npm run build` and load `dist/chrome/` unpacked and it works. What hasn't
+happened yet is a real end-to-end run against the desktop app, so treat the
+handoff to the app as unproven until that's done.
 
 ## Why it's never on the Chrome Web Store
 
@@ -30,12 +32,14 @@ docs/
 src/
   manifest.chrome.json        per-browser manifests; build picks one
   manifest.firefox.json
-  lib/classifier.js           URL → {kind, platform, canonicalUrl}  ✅ implemented
-  lib/transport.js            send(payload) seam — Phase 1: djcrate:// (stub)
-  lib/sent-memory.js          "Sent ✓" records in chrome.storage.local (stub)
-  background.js               context menus, icon state (stub)
-  popup/                      toolbar popup (stub)
-  content/inpage.js           in-page "+ CrateBuilder" button (stub)
+  lib/classifier.js           URL → {kind, platform, canonicalUrl}
+  lib/transport.js            send(payload) seam — Phase 1: djcrate://
+  lib/sent-memory.js          "Sent ✓" records in chrome.storage.local
+  lib/ui-text.js              every user-visible string
+  lib/popup-model.js          pure view-model for the popup
+  background.js               the one send path, context menus, icon state
+  popup/                      toolbar popup
+  content/inpage.js           in-page "+ CrateBuilder" button
 scripts/build.mjs             assembles dist/<browser>/ + zip
 tests/                        node:test suite, no dependencies
 ```
@@ -45,7 +49,8 @@ tests/                        node:test suite, no dependencies
 Node ≥ 20, no dependencies.
 
 ```bash
-npm test            # classifier unit tests (node --test)
+npm test            # unit tests for src/lib/ — classifier, transport,
+                    # sent-memory, ui-text, popup-model (node --test)
 npm run build       # dist/chrome/ + dist/firefox/ + zips
 ```
 

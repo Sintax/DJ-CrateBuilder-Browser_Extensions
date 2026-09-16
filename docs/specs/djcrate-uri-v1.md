@@ -1,6 +1,6 @@
 # `djcrate://` URI contract — v1
 
-**Status:** approved, unimplemented
+**Status:** approved; implemented on both sides — pending end-to-end verification
 **Owned by:** this repo (`DJ-CrateBuilder-Browser_Extensions`)
 **Consumed by:** this repo's transport module, and the main app repo
 (`DJ-CrateBuilder`) argv parser + singleton socket listener
