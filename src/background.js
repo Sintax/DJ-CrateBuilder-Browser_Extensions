@@ -36,12 +36,28 @@ function drawIcon(size, active) {
   return ctx.getImageData(0, 0, size, size);
 }
 
+// A red ✗ that flashBadge is showing right now must not be wiped by a refresh
+// that happens to land in the same 2s window. The hold lives only in this
+// worker, so a worker death drops it — which is exactly what makes the badge
+// clear below self-healing for a ✗ stranded by that death.
+const FLASH_MS = 2000;
+const badgeHold = new Map();   // tabId → epoch ms this flash stops mattering
+
+function badgeHeld(tabId) {
+  const until = badgeHold.get(tabId);
+  if (until === undefined) return false;
+  if (Date.now() >= until) { badgeHold.delete(tabId); return false; }
+  return true;
+}
+
 async function refreshTabUi(tabId, url) {
   // Self-healing: flashBadge's 2s timeout dies with the service worker, so a
   // red ✗ can get stranded. Any navigation or tab switch wipes it.
-  try {
-    await api().action.setBadgeText({ tabId, text: '' });
-  } catch { /* tab may be gone */ }
+  if (!badgeHeld(tabId)) {
+    try {
+      await api().action.setBadgeText({ tabId, text: '' });
+    } catch { /* tab may be gone */ }
+  }
   const c = classify(url ?? '');
   const active = isSendable(c);
   try {
@@ -80,8 +96,10 @@ api().tabs.onActivated.addListener(async ({ tabId }) => {
 // doing nothing.
 //
 // removeAll() first so a rebuild can never hit a duplicate id; the calls are
-// serialised through one chain so the onInstalled and module-load calls below
-// can't interleave.
+// serialised through one chain so the onInstalled and onStartup calls below
+// can't interleave. Deliberately NOT run at module load: the MV3 worker
+// re-evaluates the module body on every wake, and a rebuild there would leave
+// a window after each wake in which a right-click shows no CrateBuilder entry.
 let menuWork = Promise.resolve();
 function createMenus() {
   menuWork = menuWork.then(async () => {
@@ -104,16 +122,16 @@ function createMenus() {
   return menuWork;
 }
 
-api().runtime.onInstalled.addListener(() => { createMenus(); });
-// Also on every module load: Firefox's non-persistent event page can come back
-// without the menus onInstalled registered, and onInstalled won't fire again.
-createMenus();
-
 // ── Startup sweep ─────────────────────────────────────────────────────────
 // Without this a tab keeps the browser's default toolbar tile until it's next
 // loaded or activated — the worker has simply never seen it. The default tile
 // before the first sweep is accepted (SPEC: no icon assets to maintain, so
 // there is no default_icon/icons entry in either manifest).
+//
+// Install/startup only, never at module load: the worker wakes constantly
+// (every tab event above wakes it), and a sweep per wake costs two canvas
+// renders plus three IPC calls per open tab and fights flashBadge for the
+// badge. A tab the sweep misses self-heals on its next activation or load.
 async function sweepTabs() {
   try {
     const tabs = await api().tabs.query({});
@@ -127,10 +145,12 @@ async function sweepTabs() {
   } catch { /* tabs unavailable */ }
 }
 
-api().runtime.onStartup?.addListener?.(sweepTabs);
-// On module load, after the menus exist — refreshTabUi retitles the page entry
-// and can only do that once it has been created.
-menuWork.then(sweepTabs);
+// Menus first, then the sweep: refreshTabUi retitles the page entry and can
+// only do that once it has been created.
+function initUi() { createMenus().then(sweepTabs); }
+
+api().runtime.onInstalled.addListener(initUi);
+api().runtime.onStartup?.addListener?.(initUi);
 
 api().contextMenus.onClicked.addListener((info, tab) => {
   const raw = info.menuItemId === 'djcb-link'
@@ -142,11 +162,19 @@ api().contextMenus.onClicked.addListener((info, tab) => {
 });
 
 async function flashBadge(tabId) {
+  // Hold set before the first await: this is the only feedback the
+  // unsupported-link path has, so a refresh racing it must not clear it.
+  badgeHold.set(tabId, Date.now() + FLASH_MS);
   try {
     await api().action.setBadgeBackgroundColor({ tabId, color: '#c0392b' });
     await api().action.setBadgeText({ tabId, text: '✗' });
-    setTimeout(() => api().action.setBadgeText({ tabId, text: '' }), 2000);
-  } catch { /* tab may be gone */ }
+    setTimeout(() => {
+      badgeHold.delete(tabId);
+      api().action.setBadgeText({ tabId, text: '' });
+    }, FLASH_MS);
+  } catch {
+    badgeHold.delete(tabId);   // nothing showing — don't hold a dead tab
+  }
 }
 
 // ── The one send path ─────────────────────────────────────────────────────
