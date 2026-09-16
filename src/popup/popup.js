@@ -8,18 +8,27 @@ import { popupModel } from '../lib/popup-model.js';
 import { history, clearAll } from '../lib/sent-memory.js';
 import { sentLine } from '../lib/ui-text.js';
 
+// Resolved lazily (not at module load) so Firefox's browser.* is preferred
+// when present, falling back to chrome.* (Chrome, and Firefox's polyfill).
+const api = () => globalThis.browser ?? globalThis.chrome;
+
 const HELP_URL =
   'https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/blob/main/docs/help/didnt-open.md';
 
 const $ = (id) => document.getElementById(id);
 
 async function init() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const state = await chrome.runtime.sendMessage(
-    { type: 'djcb:page-state', url: tab?.url ?? '' });
-  const model = popupModel({
-    rawUrl: tab?.url, title: tab?.title, sent: state?.sent ?? null });
-  render(model, tab);
+  try {
+    const [tab] = await api().tabs.query({ active: true, currentWindow: true });
+    const state = await api().runtime.sendMessage(
+      { type: 'djcb:page-state', url: tab?.url ?? '' });
+    const model = popupModel({
+      rawUrl: tab?.url, title: tab?.title, sent: state?.sent ?? null });
+    render(model, tab);
+  } catch {
+    // Background unreachable — degrade instead of leaving a blank popup.
+    $('detected').textContent = 'Extension error — reopen the popup';
+  }
 }
 
 function render(model, tab) {
@@ -30,16 +39,29 @@ function render(model, tab) {
   btn.hidden = !model.sendable;
   btn.textContent = model.buttonLabel ?? '';
   $('sent-state').hidden = model.sentLine === null;
+  $('sent-state').classList.remove('error');
   $('sent-state').textContent = model.sentLine ?? '';
   btn.onclick = async () => {
     btn.disabled = true;
-    const out = await chrome.runtime.sendMessage(
-      { type: 'djcb:send', url: tab.url, tabId: tab.id });
-    if (out?.dispatched) {
-      $('sent-state').textContent = 'Sent ✓ · just now';
+    try {
+      const out = await api().runtime.sendMessage(
+        { type: 'djcb:send', url: tab.url, tabId: tab.id });
+      if (out?.dispatched) {
+        $('sent-state').classList.remove('error');
+        $('sent-state').textContent = sentLine(Date.now());
+        $('sent-state').hidden = false;
+      } else {
+        $('sent-state').classList.add('error');
+        $('sent-state').textContent = 'Couldn\'t send — see "CrateBuilder didn\'t open?"';
+        $('sent-state').hidden = false;
+      }
+    } catch {
+      $('sent-state').classList.add('error');
+      $('sent-state').textContent = 'Couldn\'t send — see "CrateBuilder didn\'t open?"';
       $('sent-state').hidden = false;
+    } finally {
+      btn.disabled = false;
     }
-    btn.disabled = false;
   };
 }
 
@@ -67,7 +89,7 @@ async function showHistory() {
   $('view-history').hidden = false;
 }
 
-$('help-link').onclick = () => chrome.tabs.create({ url: HELP_URL });
+$('help-link').onclick = () => api().tabs.create({ url: HELP_URL });
 $('history-link').onclick = showHistory;
 $('back-link').onclick = () => {
   $('view-history').hidden = true;

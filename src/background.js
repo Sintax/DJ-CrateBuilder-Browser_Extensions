@@ -10,6 +10,10 @@ import { menuTitleFor } from './lib/ui-text.js';
 import { send } from './lib/transport.js';
 import { recordSent, getSent } from './lib/sent-memory.js';
 
+// Resolved lazily (not at module load) so Firefox's browser.* is preferred
+// when present, falling back to chrome.* (Chrome, and Firefox's polyfill).
+const api = () => globalThis.browser ?? globalThis.chrome;
+
 const SITE_PATTERNS = [
   'https://www.youtube.com/*', 'https://youtube.com/*',
   'https://m.youtube.com/*', 'https://music.youtube.com/*',
@@ -36,26 +40,29 @@ async function refreshTabUi(tabId, url) {
   const c = classify(url ?? '');
   const active = isSendable(c);
   try {
-    await chrome.action.setIcon({
+    await api().action.setIcon({
       tabId,
       imageData: { 16: drawIcon(16, active), 32: drawIcon(32, active) },
     });
   } catch { /* tab may be gone */ }
   const title = menuTitleFor(c);
   try {
-    await chrome.contextMenus.update('djcb-page', {
+    await api().contextMenus.update('djcb-page', {
       visible: title !== null,
       title: title ?? 'Send to DJ-CrateBuilder',
     });
   } catch { /* menu not created yet */ }
 }
 
-chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
+api().tabs.onUpdated.addListener((tabId, info, tab) => {
+  // contextMenus.update is global, not per-tab — only the foreground tab
+  // may retitle it, or a background tab finishing load would steal it.
+  if (!tab.active) return;
   if (info.url || info.status === 'complete') refreshTabUi(tabId, tab.url);
 });
-chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+api().tabs.onActivated.addListener(async ({ tabId }) => {
   try {
-    const tab = await chrome.tabs.get(tabId);
+    const tab = await api().tabs.get(tabId);
     refreshTabUi(tabId, tab.url);
   } catch { /* tab may be gone */ }
 });
@@ -66,56 +73,67 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 // static title; host patterns keep it to the two sites, and a click on an
 // unsupported link (e.g. a playlist) flashes the badge instead of silently
 // doing nothing.
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
+api().runtime.onInstalled.addListener(() => {
+  api().contextMenus.create({
     id: 'djcb-page', contexts: ['page'],
     title: 'Send to DJ-CrateBuilder',
     documentUrlPatterns: SITE_PATTERNS,
   });
-  chrome.contextMenus.create({
+  api().contextMenus.create({
     id: 'djcb-link', contexts: ['link'],
     title: 'Send link to DJ-CrateBuilder',
     targetUrlPatterns: SITE_PATTERNS,
   });
 });
 
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+api().contextMenus.onClicked.addListener((info, tab) => {
   const raw = info.menuItemId === 'djcb-link'
     ? info.linkUrl
     : (info.pageUrl ?? tab?.url);
-  await handleSend(raw, tab?.id);
+  handleSend(raw, tab?.id).catch((err) => {
+    console.warn('djcb: context-menu send failed', err);
+  });
 });
 
 async function flashBadge(tabId) {
   try {
-    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#c0392b' });
-    await chrome.action.setBadgeText({ tabId, text: '✗' });
-    setTimeout(() => chrome.action.setBadgeText({ tabId, text: '' }), 2000);
+    await api().action.setBadgeBackgroundColor({ tabId, color: '#c0392b' });
+    await api().action.setBadgeText({ tabId, text: '✗' });
+    setTimeout(() => api().action.setBadgeText({ tabId, text: '' }), 2000);
   } catch { /* tab may be gone */ }
 }
 
 // ── The one send path ─────────────────────────────────────────────────────
+// Never throws: a rejected send() (e.g. tabs.update failing) must resolve
+// {dispatched: false, error} rather than reject across the message boundary,
+// or the popup/content-script caller is left hanging with no response.
 async function handleSend(rawUrl, tabId) {
   const c = classify(rawUrl);
   if (!isSendable(c)) {
     if (tabId !== undefined) await flashBadge(tabId);
     return { dispatched: false };
   }
-  await send({ kind: c.kind, url: c.canonicalUrl }, { tabId });
-  await recordSent(c.canonicalUrl, { kind: c.kind, platform: c.platform });
-  return { dispatched: true };
+  try {
+    await send({ kind: c.kind, url: c.canonicalUrl }, { tabId });
+    await recordSent(c.canonicalUrl, { kind: c.kind, platform: c.platform });
+    return { dispatched: true };
+  } catch (err) {
+    return { dispatched: false, error: String(err?.message ?? err) };
+  }
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+api().runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg?.type === 'djcb:send') {
     handleSend(msg.url ?? sender?.tab?.url, msg.tabId ?? sender?.tab?.id)
-      .then(sendResponse);
+      .then(sendResponse)
+      .catch((err) => sendResponse({ dispatched: false, error: String(err?.message ?? err) }));
     return true; // async response
   }
   if (msg?.type === 'djcb:page-state') {
     const c = classify(msg.url);
     Promise.resolve(c.canonicalUrl ? getSent(c.canonicalUrl) : null)
-      .then((sent) => sendResponse({ classification: c, sent }));
+      .then((sent) => sendResponse({ classification: c, sent }))
+      .catch(() => sendResponse({ classification: c, sent: null }));
     return true;
   }
   return false;

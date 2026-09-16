@@ -6,6 +6,10 @@
  * covers SoundCloud (and doubles as a safety net on YouTube).
  */
 (() => {
+  // Resolved lazily so Firefox's browser.* is preferred when present,
+  // falling back to chrome.* (Chrome, and Firefox's polyfill).
+  const api = () => globalThis.browser ?? globalThis.chrome;
+
   const BTN_ID = 'djcb-inpage-btn';
 
   // Ordered candidate anchors per site+kind; first match wins.
@@ -54,18 +58,23 @@
 
   async function evaluate() {
     document.getElementById(BTN_ID)?.remove();
-    const state = await chrome.runtime.sendMessage(
+    const state = await api().runtime.sendMessage(
       { type: 'djcb:page-state', url: location.href });
     const c = state?.classification;
     if (!c || (c.kind !== 'channel' && c.kind !== 'track')) return;
 
     const btn = makeButton(state.sent !== null);
     btn.addEventListener('click', async () => {
-      const out = await chrome.runtime.sendMessage(
-        { type: 'djcb:send', url: location.href });
-      if (out?.dispatched) {
-        btn.textContent = 'Sent ✓';
-        btn.style.background = '#2e7d32';
+      try {
+        const out = await api().runtime.sendMessage(
+          { type: 'djcb:send', url: location.href });
+        if (out?.dispatched) {
+          btn.textContent = 'Sent ✓';
+          btn.style.background = '#2e7d32';
+        }
+      } catch {
+        // Background unreachable — leave the button as-is, no unhandled
+        // rejection in the page console.
       }
     });
 

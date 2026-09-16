@@ -22,6 +22,7 @@ body {
 }
 #send:disabled { opacity: 0.6; }
 #sent-state { margin: 8px 0 0; color: #2e7d32; }
+#sent-state.error { color: #8a6d3b; }
 nav { display: flex; justify-content: space-between; margin-top: 12px; }
 nav a { color: #666; font-size: 12px; cursor: pointer; text-decoration: underline; }
 #history-list {

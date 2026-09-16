@@ -8,6 +8,11 @@
  * Contract: docs/SPEC.md §3.1; URI format: docs/specs/djcrate-uri-v1.md §1.
  */
 
+// Resolved lazily (not at module load) so tests can install a fake chrome
+// after this module is imported — ESM imports hoist above test setup — and
+// so Firefox's browser.* (promise-native) is preferred when present.
+const api = () => globalThis.browser ?? globalThis.chrome;
+
 /**
  * Build the v1 URI for a send. Exported separately so it can be unit-tested
  * without a browser.
@@ -40,9 +45,9 @@ export async function send(payload, { tabId } = {}) {
   // tab state needs saving or restoring.
   const uri = buildUri(payload);
   if (tabId !== undefined) {
-    await chrome.tabs.update(tabId, { url: uri });
+    await api().tabs.update(tabId, { url: uri });
   } else {
-    await chrome.tabs.update({ url: uri });
+    await api().tabs.update({ url: uri });
   }
   return { dispatched: true };
 }
