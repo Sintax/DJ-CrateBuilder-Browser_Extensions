@@ -1,11 +1,14 @@
 /**
- * Toolbar popup (SPEC §5.1). Renders popupModel() for the active tab; the
- * send button routes through the background's djcb:send so recording can't
- * be skipped. Popup-before-send is deliberate: the user sees what they're
- * about to send before the browser's external-protocol dialog.
+ * Toolbar popup (SPEC §5.1). Renders popupModel() for the active tab from the
+ * tab and storage alone, so the popup still paints when the background worker
+ * is asleep or wedged; only the send button talks to it, routing through
+ * djcb:send so recording can't be skipped. Popup-before-send is deliberate:
+ * the user sees what they're about to send before the browser's
+ * external-protocol dialog.
  */
 import { popupModel } from '../lib/popup-model.js';
-import { history, clearAll } from '../lib/sent-memory.js';
+import { history, clearAll, getSent } from '../lib/sent-memory.js';
+import { classify } from '../lib/classifier.js';
 import { sentLine } from '../lib/ui-text.js';
 
 // Resolved lazily (not at module load) so Firefox's browser.* is preferred
@@ -20,13 +23,19 @@ const $ = (id) => document.getElementById(id);
 async function init() {
   try {
     const [tab] = await api().tabs.query({ active: true, currentWindow: true });
-    const state = await api().runtime.sendMessage(
-      { type: 'djcb:page-state', url: tab?.url ?? '' });
-    const model = popupModel({
-      rawUrl: tab?.url, title: tab?.title, sent: state?.sent ?? null });
-    render(model, tab);
+    const c = classify(tab?.url ?? '');
+    let sent = null;
+    try {
+      if (c.canonicalUrl) sent = await getSent(c.canonicalUrl);
+    } catch {
+      // Storage unreadable — render without the "Sent ✓" line rather than
+      // failing the whole popup.
+      sent = null;
+    }
+    render(popupModel({ rawUrl: tab?.url, title: tab?.title, sent }), tab);
   } catch {
-    // Background unreachable — degrade instead of leaving a blank popup.
+    // Couldn't even read the active tab — degrade instead of leaving a blank
+    // popup.
     $('detected').textContent = 'Extension error — reopen the popup';
   }
 }

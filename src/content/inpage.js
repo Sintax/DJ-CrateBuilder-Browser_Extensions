@@ -56,31 +56,62 @@
     document.body.append(btn);
   }
 
+  // Remove every copy, not just the first: two evaluate() calls can overlap
+  // across a navigation and each leave a button behind.
+  function removeButtons() {
+    document.querySelectorAll('#' + BTN_ID).forEach((el) => el.remove());
+  }
+
+  // True once this script is orphaned — an extension reload/update leaves the
+  // old copy running with a dead runtime, and every call then throws.
+  function isOrphaned(err) {
+    if (!api()?.runtime?.id) return true;
+    return String(err?.message ?? err).toLowerCase().includes('context invalidated');
+  }
+
+  function teardown() {
+    if (pollId !== null) { clearInterval(pollId); pollId = null; }
+    document.removeEventListener('yt-navigate-finish', onMaybeNavigated);
+    removeButtons();
+  }
+
   async function evaluate() {
-    document.getElementById(BTN_ID)?.remove();
-    const state = await api().runtime.sendMessage(
-      { type: 'djcb:page-state', url: location.href });
-    const c = state?.classification;
-    if (!c || (c.kind !== 'channel' && c.kind !== 'track')) return;
+    const forHref = location.href;
+    try {
+      removeButtons();
+      const state = await api().runtime.sendMessage(
+        { type: 'djcb:page-state', url: forHref });
+      // The page moved on while we were waiting — a later evaluate() owns it.
+      if (location.href !== forHref) return;
+      const c = state?.classification;
+      if (!c || (c.kind !== 'channel' && c.kind !== 'track')) return;
 
-    const btn = makeButton(state.sent !== null);
-    btn.addEventListener('click', async () => {
-      try {
-        const out = await api().runtime.sendMessage(
-          { type: 'djcb:send', url: location.href });
-        if (out?.dispatched) {
-          btn.textContent = 'Sent ✓';
-          btn.style.background = '#2e7d32';
+      const btn = makeButton(state.sent !== null);
+      btn.addEventListener('click', async () => {
+        try {
+          // Send the URL this button was built for, not whatever the SPA has
+          // navigated to since.
+          const out = await api().runtime.sendMessage(
+            { type: 'djcb:send', url: forHref });
+          if (out?.dispatched) {
+            btn.textContent = 'Sent ✓';
+            btn.style.background = '#2e7d32';
+          }
+        } catch {
+          // Background unreachable — leave the button as-is, no unhandled
+          // rejection in the page console.
         }
-      } catch {
-        // Background unreachable — leave the button as-is, no unhandled
-        // rejection in the page console.
-      }
-    });
+      });
 
-    const anchor = findAnchor(c.platform, c.kind);
-    if (anchor) anchor.insertAdjacentElement('afterend', btn);
-    else dockToCorner(btn);
+      removeButtons();   // a concurrent evaluate() may have inserted one
+      const anchor = findAnchor(c.platform, c.kind);
+      if (anchor) anchor.insertAdjacentElement('afterend', btn);
+      else dockToCorner(btn);
+    } catch (err) {
+      // Orphaned: stop for good rather than throwing on every poll tick into
+      // the user's page console. Anything else is transient — the poll retries.
+      if (isOrphaned(err)) teardown();
+    }
   }
 
   let lastHref = null;
@@ -92,6 +123,6 @@
   }
 
   document.addEventListener('yt-navigate-finish', onMaybeNavigated);
-  setInterval(onMaybeNavigated, 1000);
+  let pollId = setInterval(onMaybeNavigated, 1000);
   onMaybeNavigated();
 })();

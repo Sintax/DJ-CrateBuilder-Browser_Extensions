@@ -37,6 +37,11 @@ function drawIcon(size, active) {
 }
 
 async function refreshTabUi(tabId, url) {
+  // Self-healing: flashBadge's 2s timeout dies with the service worker, so a
+  // red ✗ can get stranded. Any navigation or tab switch wipes it.
+  try {
+    await api().action.setBadgeText({ tabId, text: '' });
+  } catch { /* tab may be gone */ }
   const c = classify(url ?? '');
   const active = isSendable(c);
   try {
@@ -73,18 +78,59 @@ api().tabs.onActivated.addListener(async ({ tabId }) => {
 // static title; host patterns keep it to the two sites, and a click on an
 // unsupported link (e.g. a playlist) flashes the badge instead of silently
 // doing nothing.
-api().runtime.onInstalled.addListener(() => {
-  api().contextMenus.create({
-    id: 'djcb-page', contexts: ['page'],
-    title: 'Send to DJ-CrateBuilder',
-    documentUrlPatterns: SITE_PATTERNS,
+//
+// removeAll() first so a rebuild can never hit a duplicate id; the calls are
+// serialised through one chain so the onInstalled and module-load calls below
+// can't interleave.
+let menuWork = Promise.resolve();
+function createMenus() {
+  menuWork = menuWork.then(async () => {
+    try {
+      await api().contextMenus.removeAll();
+    } catch { /* nothing to remove */ }
+    try {
+      api().contextMenus.create({
+        id: 'djcb-page', contexts: ['page'],
+        title: 'Send to DJ-CrateBuilder',
+        documentUrlPatterns: SITE_PATTERNS,
+      });
+      api().contextMenus.create({
+        id: 'djcb-link', contexts: ['link'],
+        title: 'Send link to DJ-CrateBuilder',
+        targetUrlPatterns: SITE_PATTERNS,
+      });
+    } catch { /* already present */ }
   });
-  api().contextMenus.create({
-    id: 'djcb-link', contexts: ['link'],
-    title: 'Send link to DJ-CrateBuilder',
-    targetUrlPatterns: SITE_PATTERNS,
-  });
-});
+  return menuWork;
+}
+
+api().runtime.onInstalled.addListener(() => { createMenus(); });
+// Also on every module load: Firefox's non-persistent event page can come back
+// without the menus onInstalled registered, and onInstalled won't fire again.
+createMenus();
+
+// ── Startup sweep ─────────────────────────────────────────────────────────
+// Without this a tab keeps the browser's default toolbar tile until it's next
+// loaded or activated — the worker has simply never seen it. The default tile
+// before the first sweep is accepted (SPEC: no icon assets to maintain, so
+// there is no default_icon/icons entry in either manifest).
+async function sweepTabs() {
+  try {
+    const tabs = await api().tabs.query({});
+    // Active tabs last: refreshTabUi also retitles the single global page
+    // menu, so whichever tab is refreshed last is the one it ends up naming.
+    const ordered = [
+      ...tabs.filter((t) => !t.active),
+      ...tabs.filter((t) => t.active),
+    ];
+    for (const tab of ordered) await refreshTabUi(tab.id, tab.url);
+  } catch { /* tabs unavailable */ }
+}
+
+api().runtime.onStartup?.addListener?.(sweepTabs);
+// On module load, after the menus exist — refreshTabUi retitles the page entry
+// and can only do that once it has been created.
+menuWork.then(sweepTabs);
 
 api().contextMenus.onClicked.addListener((info, tab) => {
   const raw = info.menuItemId === 'djcb-link'
