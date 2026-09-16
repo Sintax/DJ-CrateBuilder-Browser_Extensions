@@ -78,14 +78,22 @@ async function showHistory() {
   const list = $('history-list');
   list.replaceChildren();
   const now = Date.now();
-  for (const entry of await history()) {
+  let entries = [];
+  try {
+    const got = await history();
+    if (Array.isArray(got)) entries = got;
+  } catch {
+    // Storage unreadable or a malformed shape — show an empty history rather
+    // than stranding the user on the main view with the list already cleared.
+  }
+  for (const entry of entries) {
     const li = document.createElement('li');
     const url = document.createElement('span');
     url.className = 'hist-url';
-    url.textContent = entry.url;
+    url.textContent = entry?.url ?? '';
     const when = document.createElement('span');
     when.className = 'hist-when';
-    when.textContent = sentLine(entry.sentAt, now);
+    when.textContent = sentLine(entry?.sentAt, now);
     li.append(url, when);
     list.append(li);
   }

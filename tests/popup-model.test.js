@@ -35,6 +35,18 @@ test('sendable track with an existing sent record', () => {
   assert.equal(m.payload.url, 'https://soundcloud.com/ab/cd');
 });
 
+test('malformed sent record still renders a plain "Sent ✓", never NaN', () => {
+  for (const sent of [{}, { sentAt: 'x' }, 'sent', { sentAt: null }]) {
+    const m = popupModel({
+      rawUrl: 'https://soundcloud.com/ab/cd',
+      title: 'cd by ab',
+      sent,
+      now: 2 * 24 * 60 * 60 * 1000,
+    });
+    assert.equal(m.sentLine, 'Sent ✓');
+  }
+});
+
 test('unsupported page', () => {
   const m = popupModel({ rawUrl: 'https://example.com/x', title: 'X' });
   assert.equal(m.sendable, false);

@@ -17,6 +17,9 @@ export function menuTitleFor({ kind }) {
 }
 
 export function sentLine(sentAt, now = Date.now()) {
+  // A record with no usable timestamp (corrupt or hand-edited storage) still
+  // says it was sent — just without the "… ago", never "NaN days ago".
+  if (!Number.isFinite(sentAt)) return 'Sent ✓';
   const plural = (n, unit) => `Sent ✓ · ${n} ${unit}${n === 1 ? '' : 's'} ago`;
   const s = Math.max(0, Math.floor((now - sentAt) / 1000));
   if (s < 60) return 'Sent ✓ · just now';

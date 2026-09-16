@@ -24,3 +24,10 @@ test('sentLine buckets relative time and always says Sent, never Added', () => {
   assert.equal(sentLine(now - 2 * 24 * 60 * 60 * 1000, now), 'Sent ✓ · 2 days ago');
   assert.ok(!sentLine(now - 1000, now).includes('Added'));
 });
+
+test('sentLine drops the relative time when sentAt is not a finite number', () => {
+  const now = 10 * 24 * 60 * 60 * 1000;
+  for (const bad of [undefined, null, NaN, Infinity, '1700000000000', {}]) {
+    assert.equal(sentLine(bad, now), 'Sent ✓');
+  }
+});
