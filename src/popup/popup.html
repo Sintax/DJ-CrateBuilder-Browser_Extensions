@@ -5,10 +5,7 @@
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <!-- Populated by popup.js from the active tab's classification.
-       Layout per docs/SPEC.md §5.1: page title, detected kind, one send
-       button, sent-state, help + history links. -->
-  <main id="app">
+  <main id="view-main">
     <p id="page-title"></p>
     <p id="detected"></p>
     <button id="send" hidden></button>
@@ -16,6 +13,14 @@
     <nav>
       <a id="help-link" href="#">CrateBuilder didn't open?</a>
       <a id="history-link" href="#">Sent history</a>
+    </nav>
+  </main>
+  <main id="view-history" hidden>
+    <p class="heading">Sent history</p>
+    <ul id="history-list"></ul>
+    <nav>
+      <a id="back-link" href="#">Back</a>
+      <a id="clear-link" href="#">Clear all</a>
     </nav>
   </main>
   <script type="module" src="popup.js"></script>

@@ -1,7 +1,36 @@
-/* Minimal placeholder — styled properly in build-order step 4. */
 body {
-  width: 280px;
+  width: 300px;
   margin: 0;
   padding: 12px;
-  font: 13px/1.4 system-ui, sans-serif;
+  font: 13px/1.45 system-ui, sans-serif;
+  color: #222;
+  background: #fff;
 }
+#page-title { font-weight: 600; margin: 0 0 2px; word-break: break-word; }
+#detected { margin: 0 0 10px; color: #444; }
+#detected.dim { color: #999; }
+.heading { font-weight: 600; margin: 0 0 8px; }
+#send {
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: #e6772e;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+#send:disabled { opacity: 0.6; }
+#sent-state { margin: 8px 0 0; color: #2e7d32; }
+nav { display: flex; justify-content: space-between; margin-top: 12px; }
+nav a { color: #666; font-size: 12px; cursor: pointer; text-decoration: underline; }
+#history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+#history-list li { padding: 4px 0; border-bottom: 1px solid #eee; }
+.hist-url { display: block; word-break: break-all; }
+.hist-when { color: #2e7d32; font-size: 11px; }
