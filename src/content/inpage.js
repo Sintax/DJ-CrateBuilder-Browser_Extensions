@@ -109,7 +109,9 @@
       else dockToCorner(btn);
     } catch (err) {
       // Orphaned: stop for good rather than throwing on every poll tick into
-      // the user's page console. Anything else is transient — the poll retries.
+      // the user's page console. Anything else is swallowed and the button
+      // stays away until the next navigation — the poll only re-enters
+      // evaluate() when location.href changes, so it does not retry in place.
       if (isOrphaned(err)) teardown();
     }
   }

@@ -9,9 +9,12 @@ The extension itself never downloads anything: it classifies the page, builds a
 **Status: Phase 1 implemented, awaiting end-to-end verification.** The design
 is approved ([docs/SPEC.md](docs/SPEC.md)) and all of it is built — classifier,
 transport, sent-memory, toolbar popup, context menus and the in-page button.
-Run `npm run build` and load `dist/chrome/` unpacked and it works. What hasn't
-happened yet is a real end-to-end run against the desktop app, so treat the
-handoff to the app as unproven until that's done.
+`npm run build` produces the unpacked `dist/chrome/` folder and a valid
+manifest, and the unit tests cover the pure logic. What hasn't happened yet is
+loading it in a real browser or a real end-to-end run against the desktop app —
+every browser check in [docs/e2e-checklist.md](docs/e2e-checklist.md) is still
+"not run", so treat the in-browser behaviour and the handoff to the app as
+unproven until someone works through that list.
 
 ## Why it's never on the Chrome Web Store
 
