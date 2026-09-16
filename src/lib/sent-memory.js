@@ -16,26 +16,35 @@
  *            sentAt: number}} SentRecord   — sentAt is epoch ms.
  */
 
+const PREFIX = 'sent:';
+
 /** @returns {Promise<SentRecord|null>} */
 export async function getSent(canonicalUrl) {
-  // TODO(build-order 5)
-  throw new Error('not implemented — see docs/SPEC.md §6');
+  const key = PREFIX + canonicalUrl;
+  const got = await chrome.storage.local.get(key);
+  return got[key] ?? null;
 }
 
 /** @returns {Promise<void>} */
-export async function recordSent(canonicalUrl, { kind, platform }) {
-  // TODO(build-order 5)
-  throw new Error('not implemented — see docs/SPEC.md §6');
+export async function recordSent(canonicalUrl, { kind, platform }, now = Date.now()) {
+  await chrome.storage.local.set({
+    [PREFIX + canonicalUrl]: { kind, platform, sentAt: now },
+  });
 }
 
 /** Last ~50 sends, newest first. @returns {Promise<Array<SentRecord & {url: string}>>} */
-export async function history() {
-  // TODO(build-order 5)
-  throw new Error('not implemented — see docs/SPEC.md §6');
+export async function history(limit = 50) {
+  const all = await chrome.storage.local.get(null);
+  return Object.entries(all)
+    .filter(([k]) => k.startsWith(PREFIX))
+    .map(([k, rec]) => ({ url: k.slice(PREFIX.length), ...rec }))
+    .sort((a, b) => b.sentAt - a.sentAt)
+    .slice(0, limit);
 }
 
 /** @returns {Promise<void>} */
 export async function clearAll() {
-  // TODO(build-order 5)
-  throw new Error('not implemented — see docs/SPEC.md §6');
+  const all = await chrome.storage.local.get(null);
+  const keys = Object.keys(all).filter((k) => k.startsWith(PREFIX));
+  if (keys.length) await chrome.storage.local.remove(keys);
 }
