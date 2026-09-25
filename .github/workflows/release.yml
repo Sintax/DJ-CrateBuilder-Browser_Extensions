@@ -1,0 +1,81 @@
+# Push a tag like v0.2.0 and this publishes a GitHub Release:
+#   - djcratebuilder-chrome-<v>.zip   Chrome / Edge / Brave, loaded unpacked
+#   - djcratebuilder-firefox-<v>.xpi  signed by Mozilla (unlisted), one-click
+#   - updates.json                    what installed Firefox copies poll
+# Signing needs the repo secrets AMO_JWT_ISSUER and AMO_JWT_SECRET (API keys
+# from addons.mozilla.org). Without them the release still goes out, with the
+# unsigned Firefox zip instead of the .xpi and no updates.json.
+# Install steps for users: docs/INSTALL.md.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Test
+        run: npm test
+
+      - name: Check the tag matches every manifest
+        run: node scripts/release-meta.mjs check "$TAG"
+
+      - name: Build
+        run: |
+          npm run build
+          V="${TAG#v}"
+          mkdir -p out
+          cp dist/djcratebuilder-chrome.zip "out/djcratebuilder-chrome-$V.zip"
+
+      - name: Sign for Firefox (unlisted)
+        if: env.AMO_JWT_ISSUER != ''
+        run: |
+          V="${TAG#v}"
+          npx --yes web-ext@8 sign \
+            --channel=unlisted \
+            --source-dir=dist/firefox \
+            --artifacts-dir=web-ext-artifacts \
+            --api-key="$AMO_JWT_ISSUER" \
+            --api-secret="$AMO_JWT_SECRET"
+          XPI="djcratebuilder-firefox-$V.xpi"
+          mv web-ext-artifacts/*.xpi "out/$XPI"
+          node scripts/release-meta.mjs updates "$TAG" \
+            "https://github.com/${{ github.repository }}/releases/download/$TAG/$XPI" \
+            > out/updates.json
+
+      - name: Unsigned Firefox zip (no AMO keys set)
+        if: env.AMO_JWT_ISSUER == ''
+        run: cp dist/djcratebuilder-firefox.zip "out/djcratebuilder-firefox-unsigned-${TAG#v}.zip"
+
+      - name: Publish the release
+        run: |
+          INSTALL="https://github.com/${{ github.repository }}/blob/$TAG/docs/INSTALL.md"
+          if ls out/*.xpi >/dev/null 2>&1; then
+            FIREFOX="click \`djcratebuilder-firefox-${TAG#v}.xpi\` below, then **Add**. It updates itself from then on."
+          else
+            FIREFOX="this release is unsigned, so it can only be loaded temporarily for testing (\`about:debugging\`)."
+          fi
+          gh release create "$TAG" out/* \
+            --title "DJ-CrateBuilder extension $TAG" \
+            --notes "**How to install:** [step-by-step guide]($INSTALL)
+
+          - **Firefox:** $FIREFOX
+          - **Chrome, Edge, Brave:** download \`djcratebuilder-chrome-${TAG#v}.zip\` and follow the guide (Developer mode → Load unpacked).
+
+          The DJ-CrateBuilder app must have **Settings → Browser integration** switched on."

@@ -6,7 +6,11 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "djcratebuilder@sintax.dev",
-      "strict_min_version": "128.0"
+      "strict_min_version": "128.0",
+      "update_url": "https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/releases/latest/download/updates.json",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "permissions": ["contextMenus", "storage", "tabs"],
