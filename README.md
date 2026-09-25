@@ -6,21 +6,22 @@ channels go to the app's Watch List, individual tracks to its download flow.
 The extension itself never downloads anything: it classifies the page, builds a
 `djcrate://` URI, and hands it to the OS. Everything else happens in the app.
 
-**Status: Phase 1 implemented, awaiting end-to-end verification.** The design
-is approved ([docs/SPEC.md](docs/SPEC.md)) and all of it is built — classifier,
-transport, sent-memory, toolbar popup, context menus and the in-page button.
-`npm run build` produces the unpacked `dist/chrome/` folder and a valid
-manifest, and the unit tests cover the pure logic. What hasn't happened yet is
-loading it in a real browser or a real end-to-end run against the desktop app —
-every browser check in [docs/e2e-checklist.md](docs/e2e-checklist.md) is still
-"not run", so treat the in-browser behaviour and the handoff to the app as
-unproven until someone works through that list.
+**Install it:** [docs/INSTALL.md](docs/INSTALL.md), with step-by-step
+instructions for Firefox, Chrome, Edge, Brave and Opera.
+
+**Status: Phase 1 working.** The design is approved
+([docs/SPEC.md](docs/SPEC.md)) and all of it is built: classifier, transport,
+sent-memory, toolbar popup, context menus and the in-page button. Sends from
+Chrome into the desktop app were confirmed working on 2026-09-25. Firefox has
+not been tried in a real browser yet. The full per-scenario list is in
+[docs/e2e-checklist.md](docs/e2e-checklist.md).
 
 ## Why it's never on the Chrome Web Store
 
 The Web Store prohibits extensions that *facilitate* downloading YouTube
 content, so this extension is deliberately never submitted. Chrome loads it
-unpacked via Developer Mode; Firefox gets a self-hosted signed build. Details
+unpacked via Developer Mode; Firefox gets a self-hosted signed build that
+updates itself. Details
 in the [feasibility research](docs/research/CrateBuilder_Extension_Research_20260821/report.md).
 
 ## Layout
@@ -44,6 +45,8 @@ src/
   popup/                      toolbar popup
   content/inpage.js           in-page "+ CrateBuilder" button
 scripts/build.mjs             assembles dist/<browser>/ + zip
+scripts/release-meta.mjs      release checks + Firefox update manifest
+.github/workflows/release.yml tag v<x.y.z> → GitHub Release
 tests/                        node:test suite, no dependencies
 ```
 
@@ -66,9 +69,14 @@ pick `dist/chrome/`. The app side must have Browser integration enabled
 
 `npm run build:firefox` produces `dist/djcratebuilder-firefox.zip`. For
 day-to-day development use `about:debugging` → "Load Temporary Add-on"
-(reverts on restart). For a permanent install, the zip must be signed:
-upload it at https://addons.mozilla.org/developers/ as **unlisted**
-(self-distribution), then install the signed `.xpi` it hands back.
+(reverts on restart). `npx web-ext lint --self-hosted --source-dir=dist/firefox`
+runs Mozilla's own checks.
+
+### Releasing
+
+Push a `v<x.y.z>` tag and GitHub builds, signs (Firefox) and publishes the
+release. Steps and the one-time Mozilla key setup:
+[docs/RELEASING.md](docs/RELEASING.md).
 
 ## The two-repo shape
 
