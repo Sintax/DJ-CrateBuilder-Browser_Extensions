@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DJ-CrateBuilder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Send YouTube and SoundCloud channels and tracks to the DJ-CrateBuilder desktop app.",
   "permissions": ["contextMenus", "storage", "tabs"],
   "background": {
