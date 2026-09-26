@@ -47,3 +47,15 @@ test('send without a tabId targets the active tab (no-id overload)', async () =>
     fake.uninstall();
   }
 });
+
+test('buildUri appends the right-click choice when there is one', () => {
+  const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+  const base = 'djcrate://add?v=1&kind=track&url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ';
+  assert.equal(buildUri({ kind: 'track', url, then: 'batch' }), `${base}&then=batch`);
+  assert.equal(buildUri({ kind: 'track', url, then: 'download' }), `${base}&then=download`);
+  assert.equal(buildUri({ kind: 'track', url, then: undefined }), base);
+});
+
+test('buildUri refuses a choice the contract does not define', () => {
+  assert.throws(() => buildUri({ kind: 'track', url: 'https://soundcloud.com/a/b', then: 'play' }), TypeError);
+});

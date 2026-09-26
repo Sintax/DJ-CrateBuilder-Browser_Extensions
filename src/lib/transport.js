@@ -13,22 +13,29 @@
 // so Firefox's browser.* (promise-native) is preferred when present.
 const api = () => globalThis.browser ?? globalThis.chrome;
 
+const THEN_VALUES = new Set(['batch', 'download']);
+
 /**
  * Build the v1 URI for a send. Exported separately so it can be unit-tested
  * without a browser.
  *
- * @param {{kind: 'channel'|'track', url: string}} payload — url is the
- *   canonical URL from the classifier, NOT the raw page URL.
- * @returns {string} e.g. "djcrate://add?v=1&kind=channel&url=https%3A%2F%2F…"
+ * @param {{kind: 'channel'|'track', url: string, then?: 'batch'|'download'}} payload
+ *   — url is the canonical URL from the classifier, NOT the raw page URL;
+ *   then is the right-click choice (contract §1.1), absent for a plain send.
+ * @returns {string} e.g. "djcrate://add?v=1&kind=track&url=…&then=batch"
  */
-export function buildUri({ kind, url } = {}) {
+export function buildUri({ kind, url, then } = {}) {
   if (kind !== 'channel' && kind !== 'track') {
     throw new TypeError(`bad kind: ${kind}`);
   }
   if (typeof url !== 'string' || !url.startsWith('https://')) {
     throw new TypeError(`bad url: ${url}`);
   }
-  return `djcrate://add?v=1&kind=${kind}&url=${encodeURIComponent(url)}`;
+  if (then !== undefined && !THEN_VALUES.has(then)) {
+    throw new TypeError(`bad then: ${then}`);
+  }
+  const uri = `djcrate://add?v=1&kind=${kind}&url=${encodeURIComponent(url)}`;
+  return then ? `${uri}&then=${then}` : uri;
 }
 
 /**
@@ -36,7 +43,7 @@ export function buildUri({ kind, url } = {}) {
  * `dispatched` means exactly that — Phase 1 cannot know whether the app
  * received it (docs/SPEC.md §7).
  *
- * @param {{kind: 'channel'|'track', url: string}} payload
+ * @param {{kind: 'channel'|'track', url: string, then?: 'batch'|'download'}} payload
  * @param {{tabId?: number}} [options] — target tab; omit to use the active tab.
  * @returns {Promise<{dispatched: boolean}>}
  */

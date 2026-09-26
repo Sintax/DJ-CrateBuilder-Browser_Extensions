@@ -17,14 +17,16 @@ editing it here first.
 djcrate://add?v=1&kind=<kind>&url=<percent-encoded canonical URL>
 ```
 
-`add` is the **verb**. `v`, `kind`, and `url` are all required; a URI missing
-any of them is malformed and must be rejected, not guessed at.
+`add` is the **verb**. `v`, `kind`, and `url` are required; `then` is
+optional. A URI missing any required one is malformed and must be rejected,
+not guessed at.
 
 | Parameter | Values | Notes |
 |---|---|---|
 | `v` | `1` | Contract version. Bumped only for a breaking change. |
 | `kind` | `channel` \| `track` | What the app should do with the URL. |
 | `url` | percent-encoded absolute `https://` URL | The **canonical** form produced by the classifier — see §3. |
+| `then` | `batch` \| `download` | **Optional.** The right-click choice — see §1.1. |
 
 Parameter order is not significant; receivers must parse by name. Unknown
 extra parameters are ignored by a receiver of the same `v` (so a future
@@ -42,6 +44,25 @@ djcrate://add?v=1&kind=track&url=https%3A%2F%2Fsoundcloud.com%2Fsomeartist%2Fsom
 Note that the `?` and `=` inside the YouTube watch URL are themselves encoded
 (`%3F`, `%3D`). Encoding the whole URL with `encodeURIComponent` is what
 produces this and is the only correct way to build the parameter.
+
+
+### 1.1 `then` — what to do with a track (optional)
+
+| `then` | App behaviour |
+|---|---|
+| absent | Prefill the link box (the original v1 behaviour). |
+| `batch` | Ask for a genre, add the track to the batch queue. |
+| `download` | Ask for a genre, add it to the batch queue and start downloading (or join a batch already running). |
+
+Only meaningful with `kind=track`; a receiver ignores it on `kind=channel`.
+An unrecognised value is treated as absent — the link is still valid, so it
+still arrives as a plain prefill. `v` stays `1`: an app that predates `then`
+ignores it as an unknown extra parameter and prefills, which is a safe
+fallback.
+
+```
+djcrate://add?v=1&kind=track&url=https%3A%2F%2Fsoundcloud.com%2Fa%2Fb&then=download
+```
 
 ---
 
@@ -121,7 +142,7 @@ is pure and total: it returns a result object, it does not raise.
 
 Phase 2 replaces the transport with native messaging, which is bidirectional.
 The payload the extension sends becomes the JSON object
-`{"v": 1, "action": "add", "kind": …, "url": …}` — the **same three fields**,
+`{"v": 1, "action": "add", "kind": …, "url": …, "then": …}` — the same fields,
 so the app-side parse and dispatch written for Phase 1 is reused directly. The
 only new work is the reply channel.
 
