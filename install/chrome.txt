@@ -1,0 +1,73 @@
+DJ-CrateBuilder browser extension
+Install instructions for Chrome, Edge, Brave and Opera
+======================================================
+
+The extension adds "Send to DJ-CrateBuilder" to YouTube and SoundCloud pages.
+It hands the link to the DJ-CrateBuilder app on your computer, and the app
+does the downloading.
+
+
+BEFORE YOU START
+----------------
+Open the DJ-CrateBuilder app, go to Settings > Browser integration, and
+switch it ON. Without it, clicking send does nothing.
+
+
+INSTALL (about two minutes)
+---------------------------
+1. Move this folder somewhere it can stay for good, for example
+   Documents\DJ-CrateBuilder Extension
+   Don't delete it later. The browser runs the extension straight from it.
+
+2. Check the folder has a file called manifest.json in it (next to this
+   file). That's the folder you'll pick in step 5.
+
+3. Open the extensions page. Type this into the address bar:
+     Chrome:  chrome://extensions
+     Edge:    edge://extensions
+     Brave:   brave://extensions
+     Opera:   opera://extensions
+
+4. Turn on "Developer mode".
+     Chrome, Brave, Opera: the switch is in the top right.
+     Edge: it's in the left-hand menu.
+
+5. Click "Load unpacked" and pick this folder.
+
+6. Optional: click the puzzle-piece icon in the toolbar and pin
+   DJ-CrateBuilder so its button is always visible.
+
+When the browser starts it may warn about extensions in developer mode.
+That's expected for an extension installed this way. Keep it switched on.
+
+
+YOUR FIRST SEND
+---------------
+Open a YouTube or SoundCloud channel or track and send it with the toolbar
+button, the right-click menu, or the "+ CrateBuilder" button on the page.
+The first time, the browser asks whether to open DJ-CrateBuilder. Tick
+"Always allow", then click "Open".
+
+
+UPDATING
+--------
+These browsers can't update it for you:
+1. Download the newest djcratebuilder-chrome-....zip from
+   https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/releases/latest
+2. Delete everything inside this folder, then unzip the new files into the
+   SAME folder.
+3. On the extensions page, click the circular reload arrow on the
+   DJ-CrateBuilder card.
+Using the same folder keeps your "Sent" history.
+
+
+NOTHING HAPPENED WHEN YOU CLICKED SEND?
+---------------------------------------
+- Check Settings > Browser integration is ON in the app.
+- If you once told the browser not to open DJ-CrateBuilder, allow it again
+  in the site settings for youtube.com or soundcloud.com.
+- If you moved or reinstalled the app, switch Browser integration off and on
+  again.
+
+Full guide:
+https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/blob/main/docs/INSTALL.md

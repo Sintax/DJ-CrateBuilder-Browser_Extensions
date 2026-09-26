@@ -1,0 +1,55 @@
+DJ-CrateBuilder browser extension
+Install instructions for Firefox
+================================
+
+The extension adds "Send to DJ-CrateBuilder" to YouTube and SoundCloud pages.
+It hands the link to the DJ-CrateBuilder app on your computer, and the app
+does the downloading.
+
+
+BEFORE YOU START
+----------------
+Open the DJ-CrateBuilder app, go to Settings > Browser integration, and
+switch it ON. Without it, clicking send does nothing.
+
+
+INSTALL (Firefox 128 or newer)
+------------------------------
+1. Open this page IN FIREFOX:
+   https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/releases/latest
+2. Click the file ending in .xpi
+3. Firefox asks whether to add DJ-CrateBuilder. Click "Add".
+4. Optional: click the puzzle-piece icon in the toolbar and pin
+   DJ-CrateBuilder so its button is always visible.
+
+Firefox checks for new versions and updates the extension by itself.
+
+
+IF YOU ONLY HAVE THIS ZIP
+-------------------------
+A plain zip isn't signed by Mozilla, so Firefox only loads it until the next
+restart. That's for testing:
+1. Type about:debugging into the address bar.
+2. Click "This Firefox", then "Load Temporary Add-on".
+3. Pick the manifest.json file in this folder.
+For everyday use, install the signed .xpi as described above.
+
+
+YOUR FIRST SEND
+---------------
+Open a YouTube or SoundCloud channel or track and send it with the toolbar
+button, the right-click menu, or the "+ CrateBuilder" button on the page.
+The first time, Firefox asks whether to open DJ-CrateBuilder. Tick
+"Always allow", then click "Open link".
+
+
+NOTHING HAPPENED WHEN YOU CLICKED SEND?
+---------------------------------------
+- Check Settings > Browser integration is ON in the app.
+- If you once told Firefox not to open DJ-CrateBuilder, change it under
+  Settings > General > Applications (look for "djcrate").
+- If you moved or reinstalled the app, switch Browser integration off and on
+  again.
+
+Full guide:
+https://github.com/Sintax/DJ-CrateBuilder-Browser_Extensions/blob/main/docs/INSTALL.md

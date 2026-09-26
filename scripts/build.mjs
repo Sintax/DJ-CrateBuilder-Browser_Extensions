@@ -5,7 +5,8 @@
  *
  * One source tree, two manifests: src/manifest.<browser>.json is copied to
  * dist/<browser>/manifest.json and everything else in src/ is copied as-is
- * (minus the other browser's manifest). The Chrome build is loaded unpacked
+ * (minus the other browser's manifest), plus install/<browser>.txt as
+ * INSTALL.txt. The Chrome build is loaded unpacked
  * straight from dist/chrome/; the Firefox zip goes off for self-host signing.
  */
 import { cp, mkdir, rm, rename } from 'node:fs/promises';
@@ -15,6 +16,7 @@ import path from 'node:path';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const src = path.join(root, 'src');
+const installText = path.join(root, 'install');
 const dist = path.join(root, 'dist');
 
 const BROWSERS = ['chrome', 'firefox'];
@@ -46,6 +48,8 @@ for (const browser of wanted) {
     filter: (p) => !path.basename(p).startsWith('manifest.') || p.endsWith(`manifest.${browser}.json`),
   });
   await rename(path.join(out, `manifest.${browser}.json`), path.join(out, 'manifest.json'));
+  // Plain-text install steps, so whoever unzips the build has them to hand.
+  await cp(path.join(installText, `${browser}.txt`), path.join(out, 'INSTALL.txt'));
 
   const zipPath = path.join(dist, `djcratebuilder-${browser}.zip`);
   await rm(zipPath, { force: true });
