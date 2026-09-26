@@ -84,7 +84,10 @@ Using the same folder keeps your "Sent ✓" history.
 
 1. Open a YouTube or SoundCloud channel or track.
 2. Send it with the toolbar button, the right-click menu, or the
-   **+ CrateBuilder** button on the page.
+   **+ CrateBuilder** button on the page. On a video or track, the
+   right-click menu also offers **Add to batch** and **Download now**: the
+   app asks which genre, then queues it (and, for Download now, starts
+   downloading).
 3. The first time, the browser asks whether to open DJ-CrateBuilder. Tick
    **Always allow**, then click **Open**.
 

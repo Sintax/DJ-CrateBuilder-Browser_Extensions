@@ -8,19 +8,12 @@
 import { classify, isSendable } from './lib/classifier.js';
 import { menuTitleFor } from './lib/ui-text.js';
 import { send } from './lib/transport.js';
+import { MENU_ITEMS, menuAction, sendPayload } from './lib/menu-model.js';
 import { recordSent, getSent } from './lib/sent-memory.js';
 
 // Resolved lazily (not at module load) so Firefox's browser.* is preferred
 // when present, falling back to chrome.* (Chrome, and Firefox's polyfill).
 const api = () => globalThis.browser ?? globalThis.chrome;
-
-const SITE_PATTERNS = [
-  'https://www.youtube.com/*', 'https://youtube.com/*',
-  'https://m.youtube.com/*', 'https://music.youtube.com/*',
-  'https://youtu.be/*',
-  'https://soundcloud.com/*', 'https://www.soundcloud.com/*',
-  'https://m.soundcloud.com/*',
-];
 
 // ── Toolbar icon: colored on a sendable page, gray otherwise (SPEC §5.1) ──
 // Drawn at runtime on an OffscreenCanvas — no PNG assets to maintain.
@@ -73,6 +66,13 @@ async function refreshTabUi(tabId, url) {
       title: title ?? 'Send to DJ-CrateBuilder',
     });
   } catch { /* menu not created yet */ }
+  // The two choices only make sense on a single track; on a channel page the
+  // plain send is the whole menu.
+  for (const item of MENU_ITEMS.filter((m) => m.pageTrackOnly)) {
+    try {
+      await api().contextMenus.update(item.id, { visible: c.kind === 'track' });
+    } catch { /* menu not created yet */ }
+  }
 }
 
 api().tabs.onUpdated.addListener((tabId, info, tab) => {
@@ -93,7 +93,9 @@ api().tabs.onActivated.addListener(async ({ tabId }) => {
 // open time — Firefox does, but this codepath works on both). Link entry:
 // static title; host patterns keep it to the two sites, and a click on an
 // unsupported link (e.g. a playlist) flashes the badge instead of silently
-// doing nothing.
+// doing nothing. A track also gets Add to batch / Download now (design
+// 2026-09-25): shown on the page when refreshTabUi finds a track, and on
+// links shaped like one (TRACK_LINK_PATTERNS in lib/menu-model.js).
 //
 // removeAll() first so a rebuild can never hit a duplicate id; the calls are
 // serialised through one chain so the onInstalled and onStartup calls below
@@ -107,16 +109,13 @@ function createMenus() {
       await api().contextMenus.removeAll();
     } catch { /* nothing to remove */ }
     try {
-      api().contextMenus.create({
-        id: 'djcb-page', contexts: ['page'],
-        title: 'Send to DJ-CrateBuilder',
-        documentUrlPatterns: SITE_PATTERNS,
-      });
-      api().contextMenus.create({
-        id: 'djcb-link', contexts: ['link'],
-        title: 'Send link to DJ-CrateBuilder',
-        targetUrlPatterns: SITE_PATTERNS,
-      });
+      for (const m of MENU_ITEMS) {
+        api().contextMenus.create({
+          id: m.id, contexts: m.contexts, title: m.title,
+          [m.patternKey]: m.patterns,
+          ...(m.pageTrackOnly ? { visible: false } : {}),
+        });
+      }
     } catch { /* already present */ }
   });
   return menuWork;
@@ -153,10 +152,9 @@ api().runtime.onInstalled.addListener(initUi);
 api().runtime.onStartup?.addListener?.(initUi);
 
 api().contextMenus.onClicked.addListener((info, tab) => {
-  const raw = info.menuItemId === 'djcb-link'
-    ? info.linkUrl
-    : (info.pageUrl ?? tab?.url);
-  handleSend(raw, tab?.id).catch((err) => {
+  const { source, then } = menuAction(info.menuItemId);
+  const raw = source === 'link' ? info.linkUrl : (info.pageUrl ?? tab?.url);
+  handleSend(raw, tab?.id, then).catch((err) => {
     console.warn('djcb: context-menu send failed', err);
   });
 });
@@ -181,14 +179,14 @@ async function flashBadge(tabId) {
 // Never throws: a rejected send() (e.g. tabs.update failing) must resolve
 // {dispatched: false, error} rather than reject across the message boundary,
 // or the popup/content-script caller is left hanging with no response.
-async function handleSend(rawUrl, tabId) {
+async function handleSend(rawUrl, tabId, then) {
   const c = classify(rawUrl);
   if (!isSendable(c)) {
     if (tabId !== undefined) await flashBadge(tabId);
     return { dispatched: false };
   }
   try {
-    await send({ kind: c.kind, url: c.canonicalUrl }, { tabId });
+    await send(sendPayload(c, then), { tabId });
     await recordSent(c.canonicalUrl, { kind: c.kind, platform: c.platform });
     return { dispatched: true };
   } catch (err) {

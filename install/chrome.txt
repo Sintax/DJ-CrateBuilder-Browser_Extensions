@@ -45,6 +45,9 @@ YOUR FIRST SEND
 ---------------
 Open a YouTube or SoundCloud channel or track and send it with the toolbar
 button, the right-click menu, or the "+ CrateBuilder" button on the page.
+On a video or track, the right-click menu also offers "Add to batch" and
+"Download now": the app asks which genre, then queues it (and, for Download
+now, starts downloading).
 The first time, the browser asks whether to open DJ-CrateBuilder. Tick
 "Always allow", then click "Open".
 

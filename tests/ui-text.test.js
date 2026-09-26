@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buttonLabelFor, menuTitleFor, sentLine } from '../src/lib/ui-text.js';
+import { ACTION_TITLES, buttonLabelFor, menuTitleFor, sentLine } from '../src/lib/ui-text.js';
 
 test('button labels (SPEC §5.1 copy, verbatim)', () => {
   assert.equal(buttonLabelFor({ kind: 'channel' }), 'Add channel to Watch List');
@@ -30,4 +30,8 @@ test('sentLine drops the relative time when sentAt is not a finite number', () =
   for (const bad of [undefined, null, NaN, Infinity, '1700000000000', {}]) {
     assert.equal(sentLine(bad, now), 'Sent ✓');
   }
+});
+
+test('right-click choice titles (design 2026-09-25, verbatim)', () => {
+  assert.deepEqual(ACTION_TITLES, { batch: 'Add to batch', download: 'Download now' });
 });

@@ -16,6 +16,9 @@ export function menuTitleFor({ kind }) {
   return null;
 }
 
+/** Right-click choices for a track (design 2026-09-25). */
+export const ACTION_TITLES = Object.freeze({ batch: 'Add to batch', download: 'Download now' });
+
 export function sentLine(sentAt, now = Date.now()) {
   // A record with no usable timestamp (corrupt or hand-edited storage) still
   // says it was sent — just without the "… ago", never "NaN days ago".

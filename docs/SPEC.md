@@ -188,6 +188,9 @@ Two entries, shown only when relevant:
 - on a **link** to a supported URL: the same, for the link target — so a channel
   can be sent from a search-results page without visiting it
 
+A track (page or link) also gets **Add to batch** and **Download now** — see
+[specs/2026-09-25-right-click-actions-design.md](specs/2026-09-25-right-click-actions-design.md).
+
 ### 5.3 In-page button
 
 A content script on the two sites only. On channel pages a small
